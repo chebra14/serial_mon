@@ -1,4 +1,4 @@
-# serial_mon
+# serial_mon v1.1
 
 A simple, clean serial terminal for Linux (and macOS). No IDE, no bloat — just a port, a baud rate, a receive window, and a send line. Exactly like the Arduino serial monitor, but living in your terminal.
 
@@ -54,16 +54,30 @@ After the first run, your settings are saved to `serial_mon.cfg` in the same dir
 
 ### Keyboard shortcuts (inside the terminal)
 
+**Toggles** — state is shown live in the header bar and remembered across sessions:
+
+| Key | Action |
+|---|---|
+| `Ctrl+H` *(empty buffer)* | Toggle HEX / ASCII display |
+| `Ctrl+T` | Toggle timestamps on received lines |
+| `Ctrl+E` | Toggle input echo (show/hide your sent lines in the receive window) |
+
+**Actions:**
+
 | Key | Action |
 |---|---|
 | `Enter` | Send typed text |
 | `Backspace` | Delete last character |
-| `Ctrl+H` *(empty buffer)* | Toggle HEX / ASCII display |
+| `Ctrl+W` | Save full buffer to a CSV log file (timestamped, saved next to the script) |
 | `Ctrl+L` | Clear the receive window |
 | `Ctrl+R` | Return to configuration wizard |
+| `Ctrl+C` | Quit |
 | `PgUp / PgDn` | Scroll through receive history |
 | `End` | Jump back to live (bottom) |
-| `Ctrl+C` | Quit |
+
+### Header bar layout
+
+The header shows two rows. The first row shows the port and baud rate. The second row shows toggle shortcuts on the left with their live ON/OFF state, divided by a `│` from action shortcuts on the right.
 
 ### Display modes
 
@@ -71,6 +85,18 @@ After the first run, your settings are saved to `serial_mon.cfg` in the same dir
 - **HEX** — each byte shown as a two-digit hex value, useful for debugging binary protocols
 
 Switch between them with `Ctrl+H` while the send buffer is empty.
+
+### Timestamps
+
+When enabled with `Ctrl+T`, each received line is prefixed with the time it arrived (`HH:MM:SS`). The timestamp is always recorded internally, so it is included in any CSV save regardless of whether the display toggle is on.
+
+### Input echo
+
+When enabled (default), lines you send appear in the receive window in cyan so you can follow the full conversation in one place. Disable with `Ctrl+E` to see only incoming data.
+
+### Saving to CSV
+
+Press `Ctrl+W` at any time to instantly save the full receive buffer to a CSV file named `serial_log_YYYYMMDD_HHMMSS.csv` in the same directory as the script. No dialog, no confirmation — the save happens immediately and the status bar confirms how many lines were written. The CSV always includes a timestamp and direction (RX/TX) for every line.
 
 ### Line endings
 
@@ -91,13 +117,17 @@ When you send a message, `serial_mon` can automatically append a line ending. Op
 
 ```
 # serial_mon saved configuration
-port     = /dev/ttyUSB0
-baud     = 115200
-bytesize = 8
-parity   = N
-stopbits = 1
-newline  = \n
+port      = /dev/ttyUSB0
+baud      = 115200
+bytesize  = 8
+parity    = N
+stopbits  = 1
+newline   = \n
+show_ts   = false
+show_echo = true
 ```
+
+The `show_ts` and `show_echo` values are updated automatically whenever you quit or hit `Ctrl+R`, so your toggle states are preserved between sessions.
 
 ---
 
