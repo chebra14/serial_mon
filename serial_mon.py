@@ -285,6 +285,7 @@ class SerialMonitor:
         init_colors()
         curses.curs_set(1)
         self.scr.nodelay(True)
+        curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
 
         self._connect()
         self._rx_thread = threading.Thread(target=self._rx_loop, daemon=True)
@@ -445,13 +446,13 @@ class SerialMonitor:
             except curses.error:
                 pass
 
-        if self.scroll_offset > 0:
-            indicator = f" ↑ {self.scroll_offset} lines back — PgDn: live "
-            try:
-                rx_win.addstr(RX_H - 1, max(0, W - len(indicator) - 1),
-                              indicator, curses.color_pair(C_STATUS))
-            except curses.error:
-                pass
+        # if self.scroll_offset > 0:
+        #     indicator = f" ↑ {self.scroll_offset} lines back — PgDn: live "
+        #     try:
+        #         rx_win.addstr(RX_H - 1, max(0, W - len(indicator) - 1),
+        #                       indicator, curses.color_pair(C_STATUS))
+        #     except curses.error:
+        #         pass
 
         # ── Status bar ────────────────────────────────────────────────────────
         status_y = HEADER_H + RX_H
@@ -505,7 +506,7 @@ class SerialMonitor:
 
         if key == 3:                       # Ctrl+C → quit
             self.running = False
-        elif key in (8, 127):              # Backspace / Ctrl+H
+        elif key in (8, 127, curses.KEY_BACKSPACE):  # Backspace / Ctrl+H
             if self.send_buf:
                 self.send_buf = self.send_buf[:-1]
             else:                          # empty buffer → toggle HEX
@@ -526,6 +527,16 @@ class SerialMonitor:
         elif key == 18:                    # Ctrl+R → back to config
             self.running = False
             self.reconfigure = True
+        elif key == curses.KEY_MOUSE:
+            try:
+                _, _, _, _, bstate = curses.getmouse()
+                if bstate & curses.BUTTON4_PRESSED:    # scroll up
+                    self.scroll_offset = min(self.scroll_offset + 3,
+                                             max(0, len(self.lines) - RX_H))
+                elif bstate & curses.BUTTON5_PRESSED:  # scroll down
+                    self.scroll_offset = max(0, self.scroll_offset - 3)
+            except curses.error:
+                pass
         elif key == curses.KEY_PPAGE:      # PgUp → scroll up
             self.scroll_offset = min(self.scroll_offset + RX_H // 2,
                                      max(0, len(self.lines) - RX_H))
