@@ -533,7 +533,7 @@ class SerialMonitor:
                 if bstate & curses.BUTTON4_PRESSED:    # scroll up
                     self.scroll_offset = min(self.scroll_offset + 3,
                                              max(0, len(self.lines) - RX_H))
-                elif bstate & curses.BUTTON5_PRESSED:  # scroll down
+                elif bstate & 0x200000:  # scroll down
                     self.scroll_offset = max(0, self.scroll_offset - 3)
             except curses.error:
                 pass
